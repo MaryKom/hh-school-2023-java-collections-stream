@@ -3,8 +3,10 @@ package tasks;
 import common.Person;
 import common.PersonService;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
 Задача 1
@@ -23,6 +25,9 @@ public class Task1 {
 
   public List<Person> findOrderedPersons(List<Integer> personIds) {
     Set<Person> persons = personService.findPersons(personIds);
-    return Collections.emptyList();
+    return persons.stream()
+            .sorted(Comparator.comparing(person -> personIds.indexOf(person.getId())))
+            .collect(Collectors.toList());
+    // Ассимптотика работы: сортировка наверное  O(n*log n), Но тут еще indexOf O(n), получается O(n^2 * log n)
   }
 }
