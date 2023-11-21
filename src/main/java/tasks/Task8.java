@@ -4,8 +4,10 @@ import common.Person;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,66 +24,49 @@ P.P.S Здесь ваши правки желательно прокоммент
 public class Task8 {
 
   private long count;
+  private static final int SKIP_PERSON=1;
 
   //Не хотим выдывать апи нашу фальшивую персону, поэтому конвертим начиная со второй
+  //Можно не удалять персону, а пропустить ее в стриме, не будет затрачиваться время на удаление
+  //Плюс возможно будет передан неизменяемый лист
   public List<String> getNames(List<Person> persons) {
-    if (persons.size() == 0) {
-      return Collections.emptyList();
-    }
-    persons.remove(0);
-    return persons.stream().map(Person::getFirstName).collect(Collectors.toList());
+    return persons.stream()
+            .skip(SKIP_PERSON)
+            .map(Person::getFirstName)
+            .collect(Collectors.toList());
   }
 
   //ну и различные имена тоже хочется
+  // неправильное использование стрима
   public Set<String> getDifferentNames(List<Person> persons) {
-    return getNames(persons).stream().distinct().collect(Collectors.toSet());
+    return new HashSet<>(getNames(persons));
   }
 
   //Для фронтов выдадим полное имя, а то сами не могут
+  //Судя из подсказки на лекции можно вот так использовать стрим, предыдущий вариант занимает много места
   public String convertPersonToString(Person person) {
-    String result = "";
-    if (person.getSecondName() != null) {
-      result += person.getSecondName();
-    }
-
-    if (person.getFirstName() != null) {
-      result += " " + person.getFirstName();
-    }
-
-    if (person.getSecondName() != null) {
-      result += " " + person.getSecondName();
-    }
-    return result;
+    return Stream.of(person.getSecondName(), person.getFirstName(), person.getMiddleName())
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(" "));
   }
 
   // словарь id персоны -> ее имя
   public Map<Integer, String> getPersonNames(Collection<Person> persons) {
-    Map<Integer, String> map = new HashMap<>(1);
-    for (Person person : persons) {
-      if (!map.containsKey(person.getId())) {
-        map.put(person.getId(), convertPersonToString(person));
-      }
-    }
-    return map;
+    return persons.stream()
+            .collect(Collectors.toMap(Person::getId, this::convertPersonToString, (name1, name2) -> name1));
   }
 
   // есть ли совпадающие в двух коллекциях персоны?
   public boolean hasSamePersons(Collection<Person> persons1, Collection<Person> persons2) {
-    boolean has = false;
-    for (Person person1 : persons1) {
-      for (Person person2 : persons2) {
-        if (person1.equals(person2)) {
-          has = true;
-        }
-      }
-    }
-    return has;
+    Set<Person> differentPersons = new HashSet<>((persons2));
+    return persons1.stream()
+            .anyMatch(differentPersons::contains);
   }
 
-  //...
-  public long countEven(Stream<Integer> numbers) {
-    count = 0;
-    numbers.filter(num -> num % 2 == 0).forEach(num -> count++);
-    return count;
+  // Первый раз вижу, чтобы передавался стрим, так делают?
+  public long countEven(Collection<Integer> numbers) {
+    return numbers.stream()
+            .filter(num -> num % 2 == 0)
+            .count();
   }
 }

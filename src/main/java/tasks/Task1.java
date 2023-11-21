@@ -1,10 +1,16 @@
 package tasks;
 
+import common.Area;
 import common.Person;
 import common.PersonService;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
 Задача 1
@@ -22,7 +28,12 @@ public class Task1 {
   }
 
   public List<Person> findOrderedPersons(List<Integer> personIds) {
-    Set<Person> persons = personService.findPersons(personIds);
-    return Collections.emptyList();
+    Map<Integer, Person> personMap = personService.findPersons(personIds).stream()
+            .collect(Collectors.toMap(Person::getId, Function.identity()));
+    return personIds.stream()
+            .map(personMap::get)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    // Ассимптотика работы: Теперь O(n) :)
   }
 }

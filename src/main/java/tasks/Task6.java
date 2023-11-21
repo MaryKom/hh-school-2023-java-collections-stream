@@ -3,9 +3,12 @@ package tasks;
 import common.Area;
 import common.Person;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
 Имеются
@@ -19,6 +22,13 @@ public class Task6 {
   public static Set<String> getPersonDescriptions(Collection<Person> persons,
                                                   Map<Integer, Set<Integer>> personAreaIds,
                                                   Collection<Area> areas) {
-    return new HashSet<>();
+    Map<Integer, Area> areaMap = areas.stream()
+            .collect(Collectors.toMap(Area::getId, Function.identity()));
+    return persons.stream()
+            .filter(person -> personAreaIds.containsKey(person.getId()))
+            .flatMap(person -> personAreaIds.get(person.getId()).stream()
+                    .map(area -> person.getFirstName() + " - " + areaMap.get(area).getName())
+            )
+            .collect(Collectors.toSet());
   }
 }
