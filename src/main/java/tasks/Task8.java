@@ -60,7 +60,7 @@ public class Task8 {
   public boolean hasSamePersons(Collection<Person> persons1, Collection<Person> persons2) {
     Set<Person> differentPersons = new HashSet<>((persons2));
     return persons1.stream()
-            .anyMatch(p -> differentPersons.contains(p));
+            .anyMatch(differentPersons::contains);
   }
 
   // Первый раз вижу, чтобы передавался стрим, так делают?
